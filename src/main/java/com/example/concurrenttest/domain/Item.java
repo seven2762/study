@@ -24,8 +24,6 @@ public class Item {
 
     private int stock;
 
-    @Version
-    private int version;
 
     @Builder
     public Item(String itemName, int stock) {

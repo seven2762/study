@@ -5,6 +5,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
 import java.util.stream.IntStream;
 
@@ -39,20 +40,24 @@ public class ItemTest {
     @Rollback(false)
     @Transactional
     void updateItem() throws InterruptedException {
-        ExecutorService executorService = Executors.newFixedThreadPool(3);
-        CountDownLatch countDownLatch = new CountDownLatch(3);
-        IntStream.range(0, 3).forEach(i -> executorService.execute(() -> {
+        AtomicInteger successAtomicInteger = new AtomicInteger(0);
+        AtomicInteger failedAtomicInteger1 = new AtomicInteger(0);
+        ExecutorService executorService = Executors.newFixedThreadPool(30);
+        CountDownLatch countDownLatch = new CountDownLatch(30);
+        IntStream.range(0, 30).forEach(i -> executorService.execute(() -> {
             try {
-                itemService.updateItem(1L, 3);
+                itemService.updateItem(6L, 1);
+                successAtomicInteger.incrementAndGet();
             } catch (Exception e) {
                 e.printStackTrace();
+                failedAtomicInteger1.incrementAndGet();
             } finally {
                 countDownLatch.countDown();
             }
         }));
         countDownLatch.await();
         executorService.shutdown();
-
+        System.out.println("성공 : " + successAtomicInteger.get() + "실패 : " + failedAtomicInteger1.get());
     }
     @Test
     @DisplayName("데드락 테스트")

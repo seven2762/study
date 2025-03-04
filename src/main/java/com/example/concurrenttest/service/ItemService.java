@@ -20,7 +20,7 @@ public class ItemService {
     }
     @Transactional
     public void updateItem(Long id, int quantity) {
-        Item item = itemRepository.findById(id)
+        Item item = itemRepository.findByIdWithPessimisticLock(id)
             .orElseThrow(() -> new RuntimeException("없는 상품 입니다"));
         item.decreaseStock(quantity);
     }
